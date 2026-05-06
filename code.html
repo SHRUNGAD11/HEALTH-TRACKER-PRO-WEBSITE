@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthTrack Pro</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #2d3748; }
+
+```
+/* NAV */
+nav { background: linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; padding:1rem 2rem;
+      display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,.2);}
+nav h1 { font-size:1.5rem; font-weight:700; }
+nav span { font-size:.85rem; opacity:.85; }
+
+/* LAYOUT */
+.container { max-width:1100px; margin:0 auto; padding:2rem 1rem; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem; }
+
+/* CARDS */
+.card { background:#fff; border-radius:12px; padding:1.5rem;
+        box-shadow:0 2px 10px rgba(0,0,0,.07); }
+.card h2 { font-size:1.05rem; font-weight:600; margin-bottom:1rem; color:#1a202c; }
+
+/* STAT CARDS */
+.stat { border-radius:12px; padding:1.2rem; color:#fff; display:flex; flex-direction:column; gap:.4rem; }
+.stat.blue  { background:linear-gradient(135deg,#2563eb,#3b82f6); }
+.stat.green { background:linear-gradient(135deg,#059669,#10b981); }
+.stat.orange{ background:linear-gradient(135deg,#d97706,#f59e0b); }
+.stat-label { font-size:.78rem; opacity:.85; text-transform:uppercase; letter-spacing:.05em; }
+.stat-value { font-size:2rem; font-weight:700; }
+.stat-sub   { font-size:.8rem; opacity:.85; }
+
+/* FORMS */
+.form-row { display:flex; gap:.75rem; flex-wrap:wrap; margin-bottom:.75rem; }
+input, select { flex:1; min-width:120px; padding:.55rem .8rem; border:1.5px solid #e2e8f0;
+                border-radius:8px; font-size:.9rem; outline:none; transition:border .2s; }
+input:focus, select:focus { border-color:#2563eb; }
+button { padding:.55rem 1.2rem; border:none; border-radius:8px; cursor:pointer;
+         font-weight:600; font-size:.9rem; transition:opacity .2s; }
+.btn-primary { background:linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; }
+.btn-danger  { background:#ef4444; color:#fff; }
+button:hover { opacity:.88; }
+
+/* TABLES */
+table { width:100%; border-collapse:collapse; font-size:.88rem; }
+th { text-align:left; padding:.6rem .8rem; background:#f7fafc; color:#718096;
+     font-weight:600; text-transform:uppercase; font-size:.75rem; letter-spacing:.04em; }
+td { padding:.6rem .8rem; border-top:1px solid #edf2f7; }
+tr:hover td { background:#f7fafc; }
+.badge { display:inline-block; padding:.2rem .6rem; border-radius:99px; font-size:.75rem; font-weight:600; }
+.badge.low    { background:#dcfce7; color:#166534; }
+.badge.medium { background:#fef9c3; color:#713f12; }
+.badge.high   { background:#fee2e2; color:#991b1b; }
+
+/* CHART */
+.chart-wrap { position:relative; height:180px; display:flex; align-items:flex-end; gap:6px;
+              padding:0 .5rem .5rem; border-bottom:2px solid #e2e8f0; }
+.bar { flex:1; border-radius:6px 6px 0 0; min-width:12px; position:relative;
+       background:linear-gradient(to top,#2563eb,#7c3aed); transition:height .4s; cursor:pointer; }
+.bar:hover::after { content:attr(data-tip); position:absolute; bottom:105%; left:50%;
+                    transform:translateX(-50%); background:#1a202c; color:#fff; padding:.3rem .6rem;
+                    border-radius:6px; font-size:.75rem; white-space:nowrap; z-index:10; }
+.chart-labels { display:flex; gap:6px; padding:0 .5rem; }
+.chart-labels span { flex:1; text-align:center; font-size:.7rem; color:#718096; }
+
+/* BMI GAUGE */
+.bmi-result { text-align:center; padding:1rem 0; }
+.bmi-value  { font-size:3rem; font-weight:700; }
+.bmi-cat    { font-size:1rem; font-weight:600; margin-top:.3rem; }
+.bmi-bar    { height:12px; border-radius:6px; margin:1rem 0 .5rem;
+              background:linear-gradient(to right,#60a5fa,#34d399,#fbbf24,#f87171); }
+.bmi-marker { height:18px; width:4px; border-radius:2px; background:#1a202c; margin-top:-15px;
+              transition:margin-left .4s; }
+
+/* TABS */
+.tabs { display:flex; gap:.5rem; margin-bottom:1.5rem; }
+.tab  { padding:.5rem 1.2rem; border-radius:8px; border:none; cursor:pointer;
+        background:#e2e8f0; font-weight:600; font-size:.9rem; transition:.2s; }
+.tab.active { background:linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; }
+
+/* RESPONSIVE */
+@media(max-width:700px) {
+  .grid2, .grid3 { grid-template-columns:1fr; }
+}
+
+.empty { color:#a0aec0; text-align:center; padding:2rem; font-size:.9rem; }
+.section-title { font-size:1.2rem; font-weight:700; margin-bottom:1rem; color:#1a202c; }
+```
+
+  </style>
+</head>
+<body>
+
+<nav>
+  <h1>🏃 HealthTrack Pro</h1>
+  <span id="dateDisplay"></span>
+</nav>
+
+<div class="container">
+
+  <!-- TABS -->
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('dashboard')">Dashboard</button>
+    <button class="tab" onclick="showTab('log')">Log Activity</button>
+    <button class="tab" onclick="showTab('bmi')">BMI Calculator</button>
+    <button class="tab" onclick="showTab('history')">History</button>
+  </div>
+
+  <!-- DASHBOARD -->
+
+  <div id="tab-dashboard">
+    <div class="grid3">
+      <div class="stat blue">
+        <span class="stat-label">Total Calories Burned</span>
+        <span class="stat-value" id="totalCal">0</span>
+        <span class="stat-sub">kcal this week</span>
+      </div>
+      <div class="stat green">
+        <span class="stat-label">Workouts Logged</span>
+        <span class="stat-value" id="totalWorkouts">0</span>
+        <span class="stat-sub">sessions</span>
+      </div>
+      <div class="stat orange">
+        <span class="stat-label">Active Minutes</span>
+        <span class="stat-value" id="totalMins">0</span>
+        <span class="stat-sub">minutes</span>
+      </div>
+    </div>
+
+```
+<div class="grid2">
+  <div class="card">
+    <h2>📊 Weekly Calorie Burn</h2>
+    <div class="chart-wrap" id="chartBars"></div>
+    <div class="chart-labels" id="chartLabels"></div>
+  </div>
+  <div class="card">
+    <h2>🥗 Today's Water & Nutrition Goals</h2>
+    <div style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:.4rem">
+        <span style="font-size:.9rem">💧 Water Intake</span>
+        <span style="font-size:.9rem;font-weight:600" id="waterVal">0 / 8 glasses</span>
+      </div>
+      <div style="background:#e2e8f0;border-radius:6px;height:10px">
+        <div id="waterBar" style="background:#3b82f6;height:10px;border-radius:6px;width:0%;transition:.4s"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:.4rem">
+        <span style="font-size:.9rem">🔥 Calorie Intake</span>
+        <span style="font-size:.9rem;font-weight:600" id="calIntakeVal">0 / 2000 kcal</span>
+      </div>
+      <div style="background:#e2e8f0;border-radius:6px;height:10px">
+        <div id="calIntakeBar" style="background:#10b981;height:10px;border-radius:6px;width:0%;transition:.4s"></div>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:1rem">
+      <button class="btn-primary" onclick="logWater()">+ 1 Glass Water</button>
+      <input type="number" id="calIntakeInput" placeholder="Calories eaten" min="0" max="5000">
+      <button class="btn-primary" onclick="logCalIntake()">Log</button>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:.5rem">
+      <button style="background:#e2e8f0;color:#4a5568" onclick="resetDay()">Reset Day</button>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- LOG ACTIVITY -->
+
+  <div id="tab-log" style="display:none">
+    <div class="card">
+      <h2>🏋️ Log New Activity</h2>
+      <div class="form-row">
+        <select id="actType">
+          <option value="">-- Activity Type --</option>
+          <option>Running</option><option>Walking</option><option>Cycling</option>
+          <option>Swimming</option><option>Gym / Weights</option><option>Yoga</option>
+          <option>HIIT</option><option>Basketball</option><option>Football</option>
+          <option>Other</option>
+        </select>
+        <input type="number" id="actDuration" placeholder="Duration (min)" min="1" max="300">
+        <input type="number" id="actCalories" placeholder="Calories burned" min="1" max="3000">
+      </div>
+      <div class="form-row">
+        <input type="date" id="actDate">
+        <input type="text" id="actNotes" placeholder="Notes (optional)" style="flex:2">
+        <select id="actIntensity">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="logActivity()">Log Activity</button>
+      <span id="logMsg" style="margin-left:1rem;color:#059669;font-size:.9rem"></span>
+    </div>
+
+```
+<div class="card" style="margin-top:1.5rem">
+  <h2>💊 Log Daily Vitals</h2>
+  <div class="form-row">
+    <input type="number" id="vWeight" placeholder="Weight (kg)" min="20" max="300" step="0.1">
+    <input type="number" id="vBP" placeholder="Systolic BP (mmHg)" min="60" max="200">
+    <input type="number" id="vHR" placeholder="Resting Heart Rate" min="40" max="200">
+    <input type="number" id="vSleep" placeholder="Sleep (hours)" min="1" max="24" step="0.5">
+  </div>
+  <button class="btn-primary" onclick="logVitals()">Save Vitals</button>
+  <span id="vitalsMsg" style="margin-left:1rem;color:#059669;font-size:.9rem"></span>
+</div>
+```
+
+  </div>
+
+  <!-- BMI CALCULATOR -->
+
+  <div id="tab-bmi" style="display:none">
+    <div class="grid2">
+      <div class="card">
+        <h2>⚖️ BMI Calculator</h2>
+        <div class="form-row">
+          <input type="number" id="bmiWeight" placeholder="Weight (kg)" min="20" max="300" step="0.1">
+          <input type="number" id="bmiHeight" placeholder="Height (cm)" min="100" max="250">
+        </div>
+        <div class="form-row">
+          <select id="bmiAge">
+            <option value="">Age group</option>
+            <option>18-25</option><option>26-35</option><option>36-50</option><option>51+</option>
+          </select>
+          <select id="bmiGender">
+            <option value="">Gender</option>
+            <option>Male</option><option>Female</option><option>Other</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="calcBMI()">Calculate BMI</button>
+
+```
+    <div class="bmi-result" id="bmiResult" style="display:none">
+      <div class="bmi-value" id="bmiVal">--</div>
+      <div class="bmi-cat" id="bmiCat"></div>
+      <div class="bmi-bar"></div>
+      <div style="position:relative">
+        <div class="bmi-marker" id="bmiMarker" style="margin-left:0%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:#718096;margin-top:.3rem">
+        <span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 BMI Reference Table</h2>
+    <table>
+      <thead><tr><th>Category</th><th>BMI Range</th><th>Risk</th></tr></thead>
+      <tbody>
+        <tr><td>Underweight</td><td>&lt; 18.5</td><td><span class="badge medium">Moderate</span></td></tr>
+        <tr><td>Normal weight</td><td>18.5 – 24.9</td><td><span class="badge low">Low</span></td></tr>
+        <tr><td>Overweight</td><td>25 – 29.9</td><td><span class="badge medium">Moderate</span></td></tr>
+        <tr><td>Obese (Class I)</td><td>30 – 34.9</td><td><span class="badge high">High</span></td></tr>
+        <tr><td>Obese (Class II)</td><td>35 – 39.9</td><td><span class="badge high">Very High</span></td></tr>
+        <tr><td>Obese (Class III)</td><td>≥ 40</td><td><span class="badge high">Extreme</span></td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:1rem;font-size:.82rem;color:#718096">
+      BMI is a screening tool and not a diagnostic measure. Consult a healthcare provider for medical advice.
+    </p>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- HISTORY -->
+
+  <div id="tab-history" style="display:none">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <h2>📅 Activity History</h2>
+        <button class="btn-danger" onclick="clearHistory()" style="font-size:.8rem;padding:.4rem .9rem">Clear All</button>
+      </div>
+      <div id="historyTable"><div class="empty">No activities logged yet. Start by logging an activity!</div></div>
+    </div>
+
+```
+<div class="card" style="margin-top:1.5rem">
+  <h2>🩺 Vitals History</h2>
+  <div id="vitalsTable"><div class="empty">No vitals recorded yet.</div></div>
+</div>
+```
+
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ── STATE ────────────────────────────────────────────────────────────
+let state = JSON.parse(localStorage.getItem('htState') || '{}');
+if (!state.activities) state.activities = [];
+if (!state.vitals)     state.vitals     = [];
+if (!state.water)      state.water      = 0;
+if (!state.calIntake)  state.calIntake  = 0;
+
+function save() { localStorage.setItem('htState', JSON.stringify(state)); }
+
+// ── HELPERS ──────────────────────────────────────────────────────────
+function today() { return new Date().toISOString().split('T')[0]; }
+
+document.getElementById('dateDisplay').textContent =
+  new Date().toLocaleDateString('en-IN', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// Default date fields to today
+document.addEventListener('DOMContentLoaded', () => {
+  const d = document.getElementById('actDate');
+  if (d) d.value = today();
+});
+document.getElementById('actDate').value = today();
+
+// ── TABS ─────────────────────────────────────────────────────────────
+function showTab(name) {
+  ['dashboard','log','bmi','history'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===name ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((b,i) => {
+    b.classList.toggle('active', ['dashboard','log','bmi','history'][i] === name);
+  });
+  if (name==='dashboard') renderDashboard();
+  if (name==='history')   renderHistory();
+}
+
+// ── LOG ACTIVITY ─────────────────────────────────────────────────────
+function logActivity() {
+  const type      = document.getElementById('actType').value;
+  const duration  = +document.getElementById('actDuration').value;
+  const calories  = +document.getElementById('actCalories').value;
+  const date      = document.getElementById('actDate').value || today();
+  const notes     = document.getElementById('actNotes').value;
+  const intensity = document.getElementById('actIntensity').value;
+
+  if (!type || !duration || !calories) {
+    alert('Please fill Activity Type, Duration, and Calories.'); return;
+  }
+  state.activities.push({ id: Date.now(), type, duration, calories, date, notes, intensity });
+  save();
+  document.getElementById('logMsg').textContent = '✓ Activity logged!';
+  setTimeout(() => document.getElementById('logMsg').textContent='', 2500);
+  document.getElementById('actType').value = '';
+  document.getElementById('actDuration').value = '';
+  document.getElementById('actCalories').value = '';
+  document.getElementById('actNotes').value = '';
+}
+
+// ── LOG VITALS ────────────────────────────────────────────────────────
+function logVitals() {
+  const weight = +document.getElementById('vWeight').value;
+  const bp     = +document.getElementById('vBP').value;
+  const hr     = +document.getElementById('vHR').value;
+  const sleep  = +document.getElementById('vSleep').value;
+  if (!weight && !bp && !hr && !sleep) { alert('Enter at least one vital.'); return; }
+  state.vitals.push({ id: Date.now(), date: today(), weight, bp, hr, sleep });
+  save();
+  document.getElementById('vitalsMsg').textContent = '✓ Vitals saved!';
+  setTimeout(() => document.getElementById('vitalsMsg').textContent='', 2500);
+  ['vWeight','vBP','vHR','vSleep'].forEach(id => document.getElementById(id).value='');
+}
+
+// ── WATER & CAL INTAKE ────────────────────────────────────────────────
+function logWater() {
+  if (state.water < 8) state.water++;
+  save(); updateGoals();
+}
+function logCalIntake() {
+  const v = +document.getElementById('calIntakeInput').value;
+  if (v>0) { state.calIntake = Math.min(state.calIntake + v, 5000); save(); updateGoals(); }
+  document.getElementById('calIntakeInput').value='';
+}
+function resetDay() { state.water=0; state.calIntake=0; save(); updateGoals(); }
+function updateGoals() {
+  document.getElementById('waterVal').textContent = state.water+' / 8 glasses';
+  document.getElementById('waterBar').style.width = Math.min(state.water/8*100,100)+'%';
+  document.getElementById('calIntakeVal').textContent = state.calIntake+' / 2000 kcal';
+  document.getElementById('calIntakeBar').style.width = Math.min(state.calIntake/2000*100,100)+'%';
+}
+
+// ── DASHBOARD STATS ───────────────────────────────────────────────────
+function renderDashboard() {
+  // last 7 days
+  const days=[]; const labels=[];
+  for (let i=6;i>=0;i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().split('T')[0];
+    const cal = state.activities.filter(a=>a.date===ds).reduce((s,a)=>s+a.calories,0);
+    days.push(cal);
+    labels.push(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]);
+  }
+  const maxCal = Math.max(...days, 1);
+  const barsEl = document.getElementById('chartBars');
+  const labsEl = document.getElementById('chartLabels');
+  barsEl.innerHTML = days.map((v,i) =>
+    `<div class="bar" style="height:${Math.max(v/maxCal*160,4)}px" data-tip="${labels[i]}: ${v} kcal"></div>`
+  ).join('');
+  labsEl.innerHTML = labels.map(l=>`<span>${l}</span>`).join('');
+
+  const week = state.activities;
+  document.getElementById('totalCal').textContent = week.reduce((s,a)=>s+a.calories,0);
+  document.getElementById('totalWorkouts').textContent = week.length;
+  document.getElementById('totalMins').textContent = week.reduce((s,a)=>s+a.duration,0);
+  updateGoals();
+}
+
+// ── HISTORY ───────────────────────────────────────────────────────────
+function renderHistory() {
+  const el = document.getElementById('historyTable');
+  if (!state.activities.length) {
+    el.innerHTML = '<div class="empty">No activities yet.</div>'; return;
+  }
+  const rows = [...state.activities].reverse().map(a => `
+    <tr>
+      <td>${a.date}</td>
+      <td>${a.type}</td>
+      <td>${a.duration} min</td>
+      <td>${a.calories} kcal</td>
+      <td><span class="badge ${a.intensity}">${a.intensity}</span></td>
+      <td>${a.notes||'—'}</td>
+      <td><button class="btn-danger" style="font-size:.75rem;padding:.25rem .6rem" onclick="deleteActivity(${a.id})">✕</button></td>
+    </tr>`).join('');
+  el.innerHTML = `<table>
+    <thead><tr><th>Date</th><th>Activity</th><th>Duration</th><th>Calories</th><th>Intensity</th><th>Notes</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+
+  const vel = document.getElementById('vitalsTable');
+  if (!state.vitals.length) { vel.innerHTML='<div class="empty">No vitals yet.</div>'; return; }
+  const vrows = [...state.vitals].reverse().map(v=>`
+    <tr>
+      <td>${v.date}</td>
+      <td>${v.weight||'—'} kg</td>
+      <td>${v.bp||'—'} mmHg</td>
+      <td>${v.hr||'—'} bpm</td>
+      <td>${v.sleep||'—'} hrs</td>
+    </tr>`).join('');
+  vel.innerHTML = `<table>
+    <thead><tr><th>Date</th><th>Weight</th><th>BP</th><th>Heart Rate</th><th>Sleep</th></tr></thead>
+    <tbody>${vrows}</tbody></table>`;
+}
+
+function deleteActivity(id) {
+  state.activities = state.activities.filter(a=>a.id!==id);
+  save(); renderHistory();
+}
+function clearHistory() {
+  if (confirm('Clear all activities?')) { state.activities=[]; save(); renderHistory(); }
+}
+
+// ── BMI ───────────────────────────────────────────────────────────────
+function calcBMI() {
+  const w = +document.getElementById('bmiWeight').value;
+  const h = +document.getElementById('bmiHeight').value;
+  if (!w||!h) { alert('Enter weight and height.'); return; }
+  const bmi = w/((h/100)**2);
+  let cat, color;
+  if (bmi<18.5)      { cat='Underweight'; color='#60a5fa'; }
+  else if (bmi<25)   { cat='Normal Weight ✓'; color='#34d399'; }
+  else if (bmi<30)   { cat='Overweight'; color='#fbbf24'; }
+  else               { cat='Obese'; color='#f87171'; }
+
+  document.getElementById('bmiVal').textContent = bmi.toFixed(1);
+  document.getElementById('bmiVal').style.color = color;
+  document.getElementById('bmiCat').textContent = cat;
+  document.getElementById('bmiCat').style.color = color;
+
+  // marker position 0-100% mapping BMI 15-45
+  const pct = Math.min(Math.max((bmi-15)/30*100, 0), 100);
+  document.getElementById('bmiMarker').style.marginLeft = pct+'%';
+  document.getElementById('bmiResult').style.display='block';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+renderDashboard();
+</script>
+
+</body>
+</html>
